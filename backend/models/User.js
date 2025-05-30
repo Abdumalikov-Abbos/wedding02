@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// write simple obj to register to this users this should be json
 const user = {
     "username": "test",
     "password": "123456",
@@ -10,7 +9,6 @@ const user = {
     "role": "user",
     "restaurant": null
 }
-/// password that you gave me is not valid
 
 
 const userSchema = new mongoose.Schema({
@@ -41,10 +39,12 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'restaurant_owner', 'user'],
         default: 'user'
     },
-    restaurant: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Restaurant'
-    }
+    ownedRestaurants: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Restaurant'
+        }
+    ]
 }, {
     timestamps: true
 });
@@ -62,7 +62,6 @@ userSchema.pre('save', async function(next) {
     }
 });
 
-// Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };

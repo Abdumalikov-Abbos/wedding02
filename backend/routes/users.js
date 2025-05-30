@@ -7,7 +7,6 @@ const bcrypt = require('bcrypt');
 // Create restaurant owner (admin only)
 router.post('/owner', auth, async (req, res) => {
     try {
-        // Check if user is admin
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Ruxsat rad etildi' });
         }
@@ -62,7 +61,11 @@ router.get('/', auth, async (req, res) => {
             return res.status(403).json({ message: 'Ruxsat rad etildi' });
         }
 
-        const users = await User.find().select('-password');
+        // Fetch users and populate the ownedRestaurants field
+        const users = await User.find()
+            .populate('ownedRestaurants', 'name address') // Populate ownedRestaurants and select name/address
+            .select('-password'); // Exclude password
+
         res.json(users);
     } catch (err) {
         console.error('Error fetching users:', err);

@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const reservationSchema = new mongoose.Schema({
-    restaurantId: {
+    restaurant: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Restaurant',
         required: true
     },
-    userId: {
+    bookedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -15,37 +15,27 @@ const reservationSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    time: {
-        type: String,
-        required: true,
-        validate: {
-            validator: function(v) {
-                return /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
-            },
-            message: props => `${props.value} is not a valid time format!`
-        }
-    },
-    guests: {
+    numberOfGuests: {
         type: Number,
         required: true,
         min: 1
     },
-    notes: {
-        type: String,
-        trim: true
-    },
     status: {
         type: String,
-        enum: ['pending', 'confirmed', 'cancelled'],
+        enum: ['pending', 'confirmed', 'cancelled', 'bo\'lib o\'tgan'],
         default: 'pending'
+    },
+    rejectionReason: {
+        type: String,
+        trim: true
     }
 }, {
     timestamps: true
 });
 
 // Add index for efficient querying
-reservationSchema.index({ restaurantId: 1, date: 1, time: 1 });
-reservationSchema.index({ userId: 1 });
+reservationSchema.index({ restaurant: 1, date: 1 });
+reservationSchema.index({ bookedBy: 1 });
 
 const Reservation = mongoose.models.Reservation || mongoose.model('Reservation', reservationSchema);
 

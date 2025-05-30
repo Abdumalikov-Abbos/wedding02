@@ -29,7 +29,7 @@ router.get('/stats', auth, async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(5)
             .populate('restaurant', 'name')
-            .populate('user', 'username');
+            .populate('bookedBy', 'username');
 
         res.json({
             totalUsers,

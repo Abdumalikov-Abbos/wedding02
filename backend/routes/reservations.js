@@ -12,7 +12,7 @@ router.get('/', auth, async (req, res) => {
 
         const reservations = await Reservation.find()
             .populate('restaurant')
-            .populate('user');
+            .populate('bookedBy');
         res.json(reservations);
     } catch (err) {
         res.status(500).send('Server error');
@@ -21,7 +21,7 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/user', auth, async (req, res) => {
     try {
-        const reservations = await Reservation.find({ user: req.user.id })
+        const reservations = await Reservation.find({ bookedBy: req.user.id })
             .populate('restaurant');
         res.json(reservations);
     } catch (err) {
@@ -42,7 +42,7 @@ router.get('/restaurant/:id', auth, async (req, res) => {
         }
 
         const reservations = await Reservation.find({ restaurant: req.params.id })
-            .populate('user');
+            .populate('bookedBy');
         res.json(reservations);
     } catch (err) {
         res.status(500).send('Server error');
@@ -66,7 +66,7 @@ router.post('/', auth, async (req, res) => {
 
         const reservation = new Reservation({
             restaurant: restaurantId,
-            user: req.user.id,
+            bookedBy: req.user.id,
             date,
             numberOfPeople
         });
@@ -86,7 +86,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
         }
 
         // Check if user is authorized to cancel
-        if (reservation.user.toString() !== req.user.id && 
+        if (reservation.bookedBy.toString() !== req.user.id && 
             req.user.role !== 'admin' && 
             (reservation.restaurant.owner.toString() !== req.user.id)) {
             return res.status(401).json({ msg: 'Not authorized' });
