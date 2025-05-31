@@ -51,30 +51,52 @@ router.get('/restaurant/:id', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
     try {
-        const { restaurantId, date, numberOfPeople } = req.body;
+        const { 
+            restaurantId, 
+            date, 
+            time,
+            numberOfGuests,
+            name,
+            surname,
+            phoneNumber,
+            notes 
+        } = req.body;
+
+        // Validate required fields
+        if (!restaurantId || !date || !time || !numberOfGuests || !name || !surname || !phoneNumber) {
+            return res.status(400).json({ message: "Barcha majburiy maydonlarni to'ldiring" });
+        }
+
+        // Combine date and time
+        const reservationDateTime = new Date(`${date}T${time}`);
 
         // Check if date is available
         const existingReservation = await Reservation.findOne({
             restaurant: restaurantId,
-            date: date,
-            status: 'active'
+            date: reservationDateTime,
+            status: { $in: ['pending', 'confirmed'] }
         });
 
         if (existingReservation) {
-            return res.status(400).json({ msg: 'This date is already reserved' });
+            return res.status(400).json({ message: 'Bu vaqtda bron mavjud' });
         }
 
         const reservation = new Reservation({
             restaurant: restaurantId,
             bookedBy: req.user.id,
-            date,
-            numberOfPeople
+            date: reservationDateTime,
+            numberOfGuests,
+            customerName: `${name} ${surname}`,
+            customerPhone: phoneNumber,
+            notes,
+            status: 'pending'
         });
 
         await reservation.save();
-        res.json(reservation);
+        res.status(201).json(reservation);
     } catch (err) {
-        res.status(500).send('Server error');
+        console.error('Error creating reservation:', err);
+        res.status(500).json({ message: 'Bron qo\'shishda xatolik yuz berdi' });
     }
 });
 
